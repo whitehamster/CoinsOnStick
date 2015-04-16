@@ -1,0 +1,5 @@
+-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork -I.\hardwares -I.\lib\inc -I.\parts -I.\user 
+-I d:\Keil\ARM\RV31\INC 
+-I d:\Keil\ARM\CMSIS\Include 
+-I d:\Keil\ARM\Inc\ST\STM32F30x 
+-DUSE_STDPERIPH_DRIVER -DSTM32F30X -o ".\output\stm32f30x_dac.o" --omf_browse ".\output\stm32f30x_dac.crf" --depend ".\output\stm32f30x_dac.d" "lib\src\stm32f30x_dac.c"
