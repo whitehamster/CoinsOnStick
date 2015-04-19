@@ -2,3 +2,4 @@
 #include "stm32f30x_it.h"
 #include "usart.h"
 #include "delay.h"
+#include <stdio.h>
