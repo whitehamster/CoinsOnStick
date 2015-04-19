@@ -796,8 +796,8 @@ ARM Macro Assembler    Page 13
               00000000 
 Command Line: --debug --xref --cpu=Cortex-M4.fp --apcs=interwork --depend=.\out
 put\startup_stm32f30x.d -o.\output\startup_stm32f30x.o -Id:\Keil\ARM\RV31\INC -
-Id:\Keil\ARM\CMSIS\Include -Id:\Keil\ARM\Inc\ST\STM32F30x --predefine="__EVAL S
-ETA 1" --list=.\startup_stm32f30x.lst user\startup_stm32f30x.s
+Id:\Keil\ARM\CMSIS\Include -Id:\Keil\ARM\Inc\ST\STM32F30x --list=.\startup_stm3
+2f30x.lst user\startup_stm32f30x.s
 
 
 
@@ -1754,4 +1754,4 @@ Symbol: __use_two_region_memory
       None
 Comment: __use_two_region_memory unused
 3 symbols
-431 symbols in table
+430 symbols in table
