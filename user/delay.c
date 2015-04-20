@@ -14,14 +14,13 @@ void delay_us(__IO uint32_t usTime){
 void delay_ms(__IO uint32_t msTime){
 	while(msTime != 0){
 		delay_us(1000);
-		msTime --;
+		msTime--;
 	}
 }
 
 void TimingDelay_Decrement(void)
 {
-  if (TimingDelay != 0x00)
-  { 
+  if (TimingDelay != 0x00){ 
     TimingDelay--;
   }
 }
