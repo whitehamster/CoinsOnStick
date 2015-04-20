@@ -221,10 +221,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>11</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>1</TopLine>
-      <CurrentLine>10</CurrentLine>
+      <CurrentLine>22</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\user\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -239,7 +239,7 @@
       <Focus>0</Focus>
       <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>136</TopLine>
+      <TopLine>137</TopLine>
       <CurrentLine>147</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\user\stm32f30x_it.c</PathWithFileName>
@@ -255,7 +255,7 @@
       <Focus>0</Focus>
       <ColumnNumber>68</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>55</TopLine>
+      <TopLine>56</TopLine>
       <CurrentLine>58</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\user\system_stm32f30x.c</PathWithFileName>
@@ -271,7 +271,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>173</TopLine>
+      <TopLine>174</TopLine>
       <CurrentLine>179</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\user\startup_stm32f30x.s</PathWithFileName>
@@ -303,7 +303,7 @@
       <Focus>0</Focus>
       <ColumnNumber>44</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
+      <TopLine>2</TopLine>
       <CurrentLine>5</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\user\delay.c</PathWithFileName>
@@ -471,7 +471,7 @@
       <Focus>0</Focus>
       <ColumnNumber>22</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>469</TopLine>
+      <TopLine>470</TopLine>
       <CurrentLine>481</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\lib\src\stm32f30x_gpio.c</PathWithFileName>
@@ -567,7 +567,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1346</TopLine>
+      <TopLine>1347</TopLine>
       <CurrentLine>1369</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\lib\src\stm32f30x_rcc.c</PathWithFileName>
@@ -647,7 +647,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1887</TopLine>
+      <TopLine>1888</TopLine>
       <CurrentLine>1909</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\lib\src\stm32f30x_usart.c</PathWithFileName>

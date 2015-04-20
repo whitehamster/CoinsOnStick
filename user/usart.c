@@ -7,6 +7,8 @@ void usart2_init(void){
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 	
+	
+	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -14,6 +16,7 @@ void usart2_init(void){
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; 
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
                                                           
+	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	

@@ -5,7 +5,7 @@ int main(){
 	delay_init();
 	while(1)  
 	{  
-		printf("test");
+		printf("123456");
 		delay_ms(1000);
 	} 
   
