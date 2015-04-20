@@ -14,7 +14,7 @@ void delay_us(__IO uint32_t usTime){
 void delay_ms(__IO uint32_t msTime){
 	while(msTime != 0){
 		delay_us(1000);
-		msTime -= 1;
+		msTime --;
 	}
 }
 
