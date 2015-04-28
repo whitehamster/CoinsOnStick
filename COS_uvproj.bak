@@ -211,7 +211,7 @@
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <RoSelD>3</RoSelD>
@@ -350,7 +350,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F30X,</Define>
               <Undefine></Undefine>
-              <IncludePath>.\hardwares;.\lib\inc;.\parts;.\user</IncludePath>
+              <IncludePath>.\hardwares;.\lib\inc;.\user;.\parts</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -546,10 +546,20 @@
               <FileType>1</FileType>
               <FilePath>.\parts\motor.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>hardwares</GroupName>
+          <Files>
             <File>
-              <FileName>sensor.c</FileName>
+              <FileName>MPU6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\parts\sensor.c</FilePath>
+              <FilePath>.\hardwares\MPU6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f3_discovery_lsm303dlhc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardwares\stm32f3_discovery_lsm303dlhc.c</FilePath>
             </File>
           </Files>
         </Group>

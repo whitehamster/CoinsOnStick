@@ -350,7 +350,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F30X,</Define>
               <Undefine></Undefine>
-              <IncludePath>.\hardwares;.\lib\inc;.\parts;.\user</IncludePath>
+              <IncludePath>.\hardwares;.\lib\inc;.\user;.\parts</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -546,10 +546,15 @@
               <FileType>1</FileType>
               <FilePath>.\parts\motor.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>hardwares</GroupName>
+          <Files>
             <File>
-              <FileName>sensor.c</FileName>
+              <FileName>MPU6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\parts\sensor.c</FilePath>
+              <FilePath>.\hardwares\MPU6050.c</FilePath>
             </File>
           </Files>
         </Group>
