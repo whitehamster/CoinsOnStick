@@ -43,12 +43,22 @@
  * the clock source to use the X Gyro for reference, which is slightly better than
  * the default internal clock source.
  */
+
 void MPU6050_Initialize()
 {
-    MPU6050_SetClockSource(MPU6050_CLOCK_PLL_XGYRO);
-    MPU6050_SetFullScaleGyroRange(MPU6050_GYRO_FS_250);
-    MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_2);
-    MPU6050_SetSleepModeStatus(DISABLE);
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, 1<<7);//reset the whole module first
+	delay_ms(50);	//wait for 50ms for the gyro to stable
+		
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_ZGYRO);//PLL with Z axis gyroscope reference
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_CONFIG, 0x01);		//DLPF_CFG = 1: Fs=1khz; bandwidth=42hz	  	
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SMPLRT_DIV, 0x01);	//500Hz sample rate ~ 2ms
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_1000);	//Gyro full scale setting
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_2);	//Accel full scale setting
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_PIN_CFG, 1<<4);		//interrupt status bits are cleared on any read operation
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_ENABLE, 1<<0);		//interupt occurs when data is ready. 
+	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x07);//reset gyro and accel sensor
+	
+	MPU6050_Exti_Config();
 }
 
 /** Verify the I2C connection.
@@ -468,6 +478,12 @@ void MPU6050_I2C_BufferRead(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t readAdd
   I2C_ClearFlag(MPU6050_I2C, I2C_ICR_STOPCF);
 
 }
-/**
- * @}
- *//* end of group MPU6050_Library */
+
+
+//Ö±½ÓÐ´¼Ä´æÆ÷
+void MPU6050_Write(uint8_t slaveAddr, uint8_t regAddr, uint8_t data) 
+{
+  uint8_t tmp;  
+  tmp = data;
+  MPU6050_I2C_ByteWrite(slaveAddr,&tmp,regAddr);   
+}

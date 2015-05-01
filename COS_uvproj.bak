@@ -556,11 +556,6 @@
               <FileType>1</FileType>
               <FilePath>.\hardwares\MPU6050.c</FilePath>
             </File>
-            <File>
-              <FileName>stm32f3_discovery_lsm303dlhc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\hardwares\stm32f3_discovery_lsm303dlhc.c</FilePath>
-            </File>
           </Files>
         </Group>
       </Groups>

@@ -1,24 +1,27 @@
 #include "main.h"
 
-static s16 acc[6];
+
+s16 mpu6050_date[6];
+
+float mpu[5];
 
 int main(){
+
 	usart2_init();
 	delay_init();
-	printf("%d",12);
 	MPU6050_I2C_Init();
-	printf("%d",34);
 	MPU6050_Initialize();
-	printf("%d",MPU6050_TestConnection());
+	
+	printf("start\n");
 	
 	while(1)
 	{ 
-		MPU6050_GetRawAccelGyro(&acc[0]);
-		printf("%d,%d,%d\n",acc[0],acc[1],acc[2]);
-		delay_ms(50);
+		mpu[0] = (float)mpu6050_date[0] / 16384;
+		mpu[1] = (float)mpu6050_date[1] / 16384;
+		mpu[2] = (float)mpu6050_date[2] / 16384;
+		printf("%f,%f,%f,%d,%d,%d\n",mpu[0],mpu[1],mpu[2],mpu6050_date[3],mpu6050_date[4],mpu6050_date[5]);
 	} 
   
-	while(1);
 	return 0;
 }
 
