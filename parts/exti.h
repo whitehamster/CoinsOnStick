@@ -2,6 +2,7 @@
 #define _exti_H_
 
 #include "stm32f30x.h"
+#include "mpu6050.h"
 
 #define MPU6050_INT_Line EXTI_Line0
 

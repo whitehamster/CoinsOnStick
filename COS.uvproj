@@ -551,6 +551,16 @@
               <FileType>1</FileType>
               <FilePath>.\parts\exti.c</FilePath>
             </File>
+            <File>
+              <FileName>tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\parts\tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>cal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\parts\cal.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

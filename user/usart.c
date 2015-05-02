@@ -30,3 +30,10 @@ void usart2_init(void){
 	
 	USART_Cmd(USART2, ENABLE); 
 }
+
+int fputc(int ch, FILE *f)
+{
+	USART_SendData(USART2, (unsigned char) ch);
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+	return (ch);
+}

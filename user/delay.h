@@ -1,4 +1,5 @@
 #include "stm32f30x.h"
+#include "main.h"
 
 void delay_init(void);
 void delay_ms(__IO uint32_t msTime);

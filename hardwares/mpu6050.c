@@ -58,7 +58,6 @@ void MPU6050_Initialize()
 	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_ENABLE, 1<<0);		//interupt occurs when data is ready. 
 	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x07);//reset gyro and accel sensor
 	
-	MPU6050_Exti_Config();
 }
 
 /** Verify the I2C connection.

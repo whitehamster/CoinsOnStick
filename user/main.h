@@ -18,6 +18,9 @@
 #include "mpu6050.h"
 #include <stdio.h>
 #include "arm_math.h"
+#include "cal.h"
+#include "tim.h"
+#include "exti.h"
 //#include <math.h>
 
 #endif

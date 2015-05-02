@@ -1,8 +1,11 @@
+#ifndef _delay_H_
+#define _delay_H_
+
 #include "delay.h"
 
 void delay_init(void){
-	//设置中断时间为8000000 / 1000000 = 8
-	SysTick_Config(SystemCoreClock / 1000000);
+	//设置中断时间为72000000 / 1000000 = 72
+  SysTick_Config(72000000 / 1000000);
 }
 
 void delay_us(__IO uint32_t usTime){ 
@@ -24,3 +27,4 @@ void TimingDelay_Decrement(void)
     TimingDelay--;
   }
 }
+#endif
