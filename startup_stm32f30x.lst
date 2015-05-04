@@ -777,15 +777,16 @@ ARM Macro Assembler    Page 12
               00000000 
               00000000 
 Command Line: --debug --xref --cpu=Cortex-M4.fp --apcs=interwork --depend=.\out
-put\startup_stm32f30x.d -o.\output\startup_stm32f30x.o -Id:\Keil\ARM\RV31\INC -
+put\startup_stm32f30x.d -o.\output\startup_stm32f30x.o -IE:\keil4\ARM\RV31\INC 
 
 
 
 ARM Macro Assembler    Page 13 
 
 
-Id:\Keil\ARM\CMSIS\Include -Id:\Keil\ARM\Inc\ST\STM32F30x --predefine="__MICROL
-IB SETA 1" --list=.\startup_stm32f30x.lst user\startup_stm32f30x.s
+-IE:\keil4\ARM\CMSIS\Include -IE:\keil4\ARM\Inc\ST\STM32F30x --predefine="__EVA
+L SETA 1" --predefine="__MICROLIB SETA 1" --list=.\startup_stm32f30x.lst user\s
+tartup_stm32f30x.s
 
 
 
@@ -1717,4 +1718,4 @@ Symbol: __main
       At line 181 in file user\startup_stm32f30x.s
 Comment: __main used once
 2 symbols
-427 symbols in table
+428 symbols in table

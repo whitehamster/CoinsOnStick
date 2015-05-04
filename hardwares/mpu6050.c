@@ -1,488 +1,116 @@
-//MPU6050 I2C library for ARM STM32F103xx Microcontrollers - Main source file
-//Has bit, byte and buffer I2C R/W functions
-// 23/05/2012 by Harinadha Reddy Chintalapalli <harinath.ec@gmail.com>
-// Changelog:
-//     2012-05-23 - initial release. Thanks to Jeff Rowberg <jeff@rowberg.net> for his AVR/Arduino
-//                  based MPU6050 development which inspired me & taken as reference to develop this.
-/* ============================================================================================
- MPU6050 device I2C library code for ARM STM32F103xx is placed under the MIT license
- Copyright (c) 2012 Harinadha Reddy Chintalapalli
+/*
+	*待解决: 
+			采样率问题 void MPU6050_initialize(void)
+			
+*/
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ================================================================================================
- */
 
-/* Includes */
+
+
+
 #include "MPU6050.h"
-#include "stm32f30x_i2c.h"
+#include "iic.h"
+#include "delay.h"
+#include "usart.h"
+#include <math.h>
+uint8_t buffer[14] = {0};
+double angleY = 0;
 
-/** @defgroup MPU6050_Library
- * @{
- */
-
-/** Power on and prepare for general usage.
- * This will activate the device and take it out of sleep mode (which must be done
- * after start-up). This function also sets both the accelerometer and the gyroscope
- * to their most sensitive settings, namely +/- 2g and +/- 250 degrees/sec, and sets
- * the clock source to use the X Gyro for reference, which is slightly better than
- * the default internal clock source.
- */
-
-void MPU6050_Initialize()
+/**************************实现函数********************************************
+*函数原型:		double read_angleY(void)
+*功　　能:	    计算与初始Y轴的夹角, 并返回该值 (double) angleY
+*******************************************************************************/
+double read_angleY(void)
 {
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, 1<<7);//reset the whole module first
-	delay_ms(50);	//wait for 50ms for the gyro to stable
-		
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_ZGYRO);//PLL with Z axis gyroscope reference
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_CONFIG, 0x01);		//DLPF_CFG = 1: Fs=1khz; bandwidth=42hz	  	
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SMPLRT_DIV, 0x01);	//500Hz sample rate ~ 2ms
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_1000);	//Gyro full scale setting
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_2);	//Accel full scale setting
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_PIN_CFG, 1<<4);		//interrupt status bits are cleared on any read operation
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_ENABLE, 1<<0);		//interupt occurs when data is ready. 
-	MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x07);//reset gyro and accel sensor
-	
+	int16_t GyroData[3] = {0};
+	int16_t AccData[3] = {0};
+	int16_t acc_Y = 0;//沿Y正方向加速度
+	int16_t w_Z = 0;//绕Z轴角速度
+	double angleY = 0;
+	printf("into read_angleY");
+	MPU6050GyroRead(GyroData);
+	MPU6050AccRead(AccData);
+	printf("get data");
+	w_Z = (GyroData[2]/Gyro1000scale_JD)-gyro_zOFFSET;
+	acc_Y = AccData[1]/Acc1000scale_JD;
+	angleY = acos(((w_Z*w_Z*StickLength)-acc_Y)/MPU6050_ONE_G);//arccos{[(w_Z^2)*r-a_Y]/g}
+	printf("GyroData\tY %.2lf`\n",angleY);
+	return angleY;
 }
 
-/** Verify the I2C connection.
- * Make sure the device is connected and responds as expected.
- * @return True if connection is valid, FALSE otherwise
- */
-int MPU6050_TestConnection()
+/**************************实现函数********************************************
+*函数原型:		uint8_tMPU6050_getDeviceID(void)
+*功　　能:	    读取  MPU6050 WHO_AM_I 标识	 将返回 0x68
+*******************************************************************************/
+uint8_t MPU6050_getDeviceID(void)
 {
-    return MPU6050_GetDeviceID() == 0x34 ? 1 : 0; //0b110100; 8-bit representation in hex = 0x34
-}
-// WHO_AM_I register
-
-/** Get Device ID.
- * This register is used to verify the identity of the device (0b110100).
- * @return Device ID (should be 0x68, 104 dec, 150 oct)
- * @see MPU6050_RA_WHO_AM_I
- * @see MPU6050_WHO_AM_I_BIT
- * @see MPU6050_WHO_AM_I_LENGTH
- */
-uint8_t MPU6050_GetDeviceID()
-{
-    uint8_t tmp;
-    MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT, MPU6050_WHO_AM_I_LENGTH, &tmp);
-    return tmp;
+    IICreadBytes(devAddr, MPU6050_RA_WHO_AM_I, 1, buffer);
+    return buffer[0];
 }
 
-/** Set clock source setting.
- * An internal 8MHz oscillator, gyroscope based clock, or external sources can
- * be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
- * or an external source is chosen as the clock source, the MPU-60X0 can operate
- * in low power modes with the gyroscopes disabled.
- *
- * Upon power up, the MPU-60X0 clock source defaults to the internal oscillator.
- * However, it is highly recommended that the device be configured to use one of
- * the gyroscopes (or an external clock source) as the clock reference for
- * improved stability. The clock source can be selected according to the following table:
- *
- * <pre>
- * CLK_SEL | Clock Source
- * --------+--------------------------------------
- * 0       | Internal oscillator
- * 1       | PLL with X Gyro reference
- * 2       | PLL with Y Gyro reference
- * 3       | PLL with Z Gyro reference
- * 4       | PLL with external 32.768kHz reference
- * 5       | PLL with external 19.2MHz reference
- * 6       | Reserved
- * 7       | Stops the clock and keeps the timing generator in reset
- * </pre>
- *
- * @param source New clock source setting
- * @see MPU6050_GetClockSource()
- * @see MPU6050_RA_PWR_MGMT_1
- * @see MPU6050_PWR1_CLKSEL_BIT
- * @see MPU6050_PWR1_CLKSEL_LENGTH
- */
-void MPU6050_SetClockSource(uint8_t source)
-{
-    MPU6050_WriteBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
+/**************************实现函数********************************************
+*函数原型:		uint8_tMPU6050_testConnection(void)
+*功　　能:	    检测MPU6050 是否已经连接
+*******************************************************************************/
+uint8_t MPU6050_testConnection(void) {
+	if(MPU6050_getDeviceID() == 0x68)  //0b01101000;
+		return 1;
+	else return 0;
 }
 
-/** Set full-scale gyroscope range.
- * @param range New full-scale gyroscope range value
- * @see MPU6050_GetFullScaleGyroRange()
- * @see MPU6050_GYRO_FS_250
- * @see MPU6050_RA_GYRO_CONFIG
- * @see MPU6050_GCONFIG_FS_SEL_BIT
- * @see MPU6050_GCONFIG_FS_SEL_LENGTH
- */
-void MPU6050_SetFullScaleGyroRange(uint8_t range)
-{
-    MPU6050_WriteBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, range);
-}
-
-// GYRO_CONFIG register
-
-/** Get full-scale gyroscope range.
- * The FS_SEL parameter allows setting the full-scale range of the gyro sensors,
- * as described in the table below.
- *
- * <pre>
- * 0 = +/- 250 degrees/sec
- * 1 = +/- 500 degrees/sec
- * 2 = +/- 1000 degrees/sec
- * 3 = +/- 2000 degrees/sec
- * </pre>
- *
- * @return Current full-scale gyroscope range setting
- * @see MPU6050_GYRO_FS_250
- * @see MPU6050_RA_GYRO_CONFIG
- * @see MPU6050_GCONFIG_FS_SEL_BIT
- * @see MPU6050_GCONFIG_FS_SEL_LENGTH
- */
-uint8_t MPU6050_GetFullScaleGyroRange()
-{
-    uint8_t tmp;
-    MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, &tmp);
-    return tmp;
-}
-
-/** Get full-scale accelerometer range.
- * The FS_SEL parameter allows setting the full-scale range of the accelerometer
- * sensors, as described in the table below.
- *
- * <pre>
- * 0 = +/- 2g
- * 1 = +/- 4g
- * 2 = +/- 8g
- * 3 = +/- 16g
- * </pre>
- *
- * @return Current full-scale accelerometer range setting
- * @see MPU6050_ACCEL_FS_2
- * @see MPU6050_RA_ACCEL_CONFIG
- * @see MPU6050_ACONFIG_AFS_SEL_BIT
- * @see MPU6050_ACONFIG_AFS_SEL_LENGTH
- */
-uint8_t MPU6050_GetFullScaleAccelRange()
-{
-    uint8_t tmp;
-    MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, &tmp);
-    return tmp;
-}
-
-/** Set full-scale accelerometer range.
- * @param range New full-scale accelerometer range setting
- * @see MPU6050_GetFullScaleAccelRange()
- */
-void MPU6050_SetFullScaleAccelRange(uint8_t range)
-{
-    MPU6050_WriteBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, range);
-}
-
-/** Get sleep mode status.
- * Setting the SLEEP bit in the register puts the device into very low power
- * sleep mode. In this mode, only the serial interface and internal registers
- * remain active, allowing for a very low standby current. Clearing this bit
- * puts the device back into normal mode. To save power, the individual standby
- * selections for each of the gyros should be used if any gyro axis is not used
- * by the application.
- * @return Current sleep mode enabled status
- * @see MPU6050_RA_PWR_MGMT_1
- * @see MPU6050_PWR1_SLEEP_BIT
- */
-int MPU6050_GetSleepModeStatus()
-{
-    uint8_t tmp;
-    MPU6050_ReadBit(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, &tmp);
-    return tmp == 0x00 ? 0 : 1;
-}
-
-/** Set sleep mode status.
- * @param enabled New sleep mode enabled status
- * @see MPU6050_GetSleepModeStatus()
- * @see MPU6050_RA_PWR_MGMT_1
- * @see MPU6050_PWR1_SLEEP_BIT
- */
-void MPU6050_SetSleepModeStatus(FunctionalState NewState)
-{
-    MPU6050_WriteBit(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, NewState);
-}
-
-/** Get raw 6-axis motion sensor readings (accel/gyro).
- * Retrieves all currently available motion sensor values.
- * @param AccelGyro 16-bit signed integer array of length 6
- * @see MPU6050_RA_ACCEL_XOUT_H
- */
-void MPU6050_GetRawAccelGyro(s16* AccelGyro)
-{
-		int i;
-    u8 tmpBuffer[14];
-    MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS, tmpBuffer, MPU6050_RA_ACCEL_XOUT_H, 14);
-    /* Get acceleration */
-    for (i = 0; i < 3; i++)
-        AccelGyro[i] = ((s16) ((u16) tmpBuffer[2 * i] << 8) + tmpBuffer[2 * i + 1]);
-    /* Get Angular rate */
-    for (i = 4; i < 7; i++)
-        AccelGyro[i - 1] = ((s16) ((u16) tmpBuffer[2 * i] << 8) + tmpBuffer[2 * i + 1]);
-
-}
-
-/** Write multiple bits in an 8-bit device register.
- * @param slaveAddr I2C slave device address
- * @param regAddr Register regAddr to write to
- * @param bitStart First bit position to write (0-7)
- * @param length Number of bits to write (not more than 8)
- * @param data Right-aligned value to write
- */
-void MPU6050_WriteBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data)
-{
-    //      010 value to write
-    // 76543210 bit numbers
-    //    xxx   args: bitStart=4, length=3
-    // 00011100 mask byte
-    // 10101111 original value (sample)
-    // 10100011 original & ~mask
-    // 10101011 masked | value
-    uint8_t tmp;
-	  uint8_t mask;
-    MPU6050_I2C_BufferRead(slaveAddr, &tmp, regAddr, 1);
-		mask	= ((1 << length) - 1) << (bitStart - length + 1);
-    data <<= (bitStart - length + 1); // shift data into correct position
-    data &= mask; // zero all non-important bits in data
-    tmp &= ~(mask); // zero all important bits in existing byte
-    tmp |= data; // combine data with existing byte
-    MPU6050_I2C_ByteWrite(slaveAddr, &tmp, regAddr);
-}
-
-/** write a single bit in an 8-bit device register.
- * @param slaveAddr I2C slave device address
- * @param regAddr Register regAddr to write to
- * @param bitNum Bit position to write (0-7)
- * @param value New bit value to write
- */
-void MPU6050_WriteBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data)
-{
-    uint8_t tmp;
-    MPU6050_I2C_BufferRead(slaveAddr, &tmp, regAddr, 1);
-    tmp = (data != 0) ? (tmp | (1 << bitNum)) : (tmp & ~(1 << bitNum));
-    MPU6050_I2C_ByteWrite(slaveAddr, &tmp, regAddr);
-}
-
-/** Read multiple bits from an 8-bit device register.
- * @param slaveAddr I2C slave device address
- * @param regAddr Register regAddr to read from
- * @param bitStart First bit position to read (0-7)
- * @param length Number of bits to read (not more than 8)
- * @param data Container for right-aligned value (i.e. '101' read from any bitStart position will equal 0x05)
- * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in readTimeout)
- */
-void MPU6050_ReadBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data)
-{
-    // 01101001 read byte
-    // 76543210 bit numbers
-    //    xxx   args: bitStart=4, length=3
-    //    010   masked
-    //   -> 010 shifted
-    uint8_t tmp;
-		uint8_t mask;
-    MPU6050_I2C_BufferRead(slaveAddr, &tmp, regAddr, 1);
-    mask = ((1 << length) - 1) << (bitStart - length + 1);
-    tmp &= mask;
-    tmp >>= (bitStart - length + 1);
-    *data = tmp;
-}
-
-/** Read a single bit from an 8-bit device register.
- * @param slaveAddr I2C slave device address
- * @param regAddr Register regAddr to read from
- * @param bitNum Bit position to read (0-7)
- * @param data Container for single bit value
- * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in readTimeout)
- */
-void MPU6050_ReadBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data)
-{
-    uint8_t tmp;
-    MPU6050_I2C_BufferRead(slaveAddr, &tmp, regAddr, 1);
-    *data = tmp & (1 << bitNum);
-}
-
-/**
- * @brief  Initializes the I2C peripheral used to drive the MPU6050
- * @param  None
- * @return None
- */
-void MPU6050_I2C_Init()
-{
-  GPIO_InitTypeDef GPIO_InitStructure;
-  I2C_InitTypeDef  I2C_InitStructure;
-
-  /* Enable the I2C periph */
-  RCC_APB1PeriphClockCmd(MPU6050_I2C_RCC_Periph, ENABLE);
-  
-  /* Enable SCK and SDA GPIO clocks */
-  RCC_AHBPeriphClockCmd(MPU6050_I2C_RCC_Port , ENABLE);
-
-	GPIO_PinAFConfig(MPU6050_I2C_Port, MPU6050_I2C_SCL_SOURCE, MPU6050_I2C_AF);
-  GPIO_PinAFConfig(MPU6050_I2C_Port, MPU6050_I2C_SDA_SOURCE, MPU6050_I2C_AF);
-
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_DOWN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  
-  /* I2C SCK pin configuration */
-  GPIO_InitStructure.GPIO_Pin = MPU6050_I2C_SCL_Pin;
-  GPIO_Init(MPU6050_I2C_Port, &GPIO_InitStructure);
-  
-  /* I2C SDA pin configuration */
-  GPIO_InitStructure.GPIO_Pin =  MPU6050_I2C_SDA_Pin;
-  GPIO_Init(MPU6050_I2C_Port, &GPIO_InitStructure);
-
-  /* I2C configuration -------------------------------------------------------*/
-  I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-  I2C_InitStructure.I2C_AnalogFilter = I2C_AnalogFilter_Enable;
-  I2C_InitStructure.I2C_DigitalFilter = 0x00;
-  I2C_InitStructure.I2C_OwnAddress1 = 0x00;
-  I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-  I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-  I2C_InitStructure.I2C_Timing = 0x00902025;
-  
-  /* Apply LSM303DLHC_I2C configuration after enabling it */
-  I2C_Init(MPU6050_I2C, &I2C_InitStructure);
-  
-  /* LSM303DLHC_I2C Peripheral Enable */
-  I2C_Cmd(MPU6050_I2C, ENABLE);
-}
-
-/**
- * @brief  Writes one byte to the  MPU6050.
- * @param  slaveAddr : slave address MPU6050_DEFAULT_ADDRESS
- * @param  pBuffer : pointer to the buffer  containing the data to be written to the MPU6050.
- * @param  writeAddr : address of the register in which the data will be written
- * @return None
- */
-void MPU6050_I2C_ByteWrite(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t writeAddr)
-{
-	/* Test on BUSY Flag */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_BUSY) != RESET)
+/**************************实现函数********************************************
+*函数原型:		void MPU6050_Check()
+*功　　能:	  检测IIC总线上的MPU6050是否存在
+*******************************************************************************/
+void MPU6050_Check(void) 
+{ 
+  switch(MPU6050_testConnection())
   {
-	}
-  /* Configure slave address, nbytes, reload, end mode and start or stop generation */
-  I2C_TransferHandling(MPU6050_I2C, slaveAddr, 1, I2C_Reload_Mode, I2C_Generate_Start_Write);
-  
-  /* Wait until TXIS flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_TXIS) == RESET)   
-  {
+    case 0: printf("未检测到MPU6050...\r\n");
+      break;
+    case 1: printf("已检测到MPU6050...\r\n");
+      break;
   }
-  /* Send Register address */
-  I2C_SendData(MPU6050_I2C, (uint8_t) writeAddr);
-  
-  /* Wait until TCR flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_TCR) == RESET)
-  {
-  }
-
-  /* Configure slave address, nbytes, reload, end mode and start or stop generation */
-  I2C_TransferHandling(MPU6050_I2C, slaveAddr, 1, I2C_AutoEnd_Mode, I2C_No_StartStop);
-       
-  /* Wait until TXIS flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_TXIS) == RESET)
-  {
-  }  
-
-  /* Write data to TXDR */
-  I2C_SendData(MPU6050_I2C, *pBuffer);
-
-  /* Wait until STOPF flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_STOPF) == RESET)
-  {
-  }   
-
-  /* Clear STOPF flag */
-  I2C_ClearFlag(MPU6050_I2C, I2C_ICR_STOPCF);
+} 
+/**************************实现函数********************************************
+*函数原型:		void MPU6050_initialize(void)
+*功　　能:	    初始化 	MPU6050 以进入可用状态。
+*******************************************************************************/
+void MPU6050_initialize(void) {
+	IICwriteByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80);      //唤醒
+    delay_ms(50);
+    IICwriteByte(devAddr, MPU6050_RA_SMPLRT_DIV, 0x00);      //SMPLRT_DIV    -- SMPLRT_DIV = 0  Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
+	IICwriteByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x03);      //PWR_MGMT_1    -- SLEEP 0; CYCLE 0; TEMP_DIS 0;不睡觉，不循环，使能温度传感器。 CLKSEL 3 (PLL with Z Gyro reference)
+	IICwriteByte(devAddr, MPU6050_RA_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 1 << 1 | 0 << 0);		//interrupt status bits are cleared on any read operation
+	IICwriteByte(devAddr, MPU6050_RA_INT_ENABLE, 1<<0);		//interupt occurs when data is ready. 
+	IICwriteByte(devAddr, MPU6050_RA_CONFIG, MPU6050_DLPF_BW_42);  //EXT_SYNC_SET 0 (disable input pin for data sync) ; default DLPF_CFG = 0 => ACC bandwidth = 260Hz  GYRO bandwidth = 256Hz)
+	IICwriteByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x00);      //FS_SEL = 0: Full scale set to 250 deg/sec
+    IICwriteByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 1 << 3);//Full scale set to 4g
+	printf("MPU6050_initialized\n");
 }
-
-/**
- * @brief  Reads a block of data from the MPU6050.
- * @param  slaveAddr  : slave address MPU6050_DEFAULT_ADDRESS
- * @param  pBuffer : pointer to the buffer that receives the data read from the MPU6050.
- * @param  readAddr : MPU6050's internal address to read from.
- * @param  NumByteToRead : number of bytes to read from the MPU6050 ( NumByteToRead >1  only for the Mgnetometer readinf).
- * @return None
- */
-void MPU6050_I2C_BufferRead(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t readAddr, uint16_t NumByteToRead)
+//读加速度
+void MPU6050AccRead(int16_t *accData)
 {
-  /* Test on BUSY Flag */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_BUSY) != RESET)
-  {
-  }
-  
-  /* Configure slave address, nbytes, reload, end mode and start or stop generation */
-  I2C_TransferHandling(MPU6050_I2C, slaveAddr, 1, I2C_SoftEnd_Mode, I2C_Generate_Start_Write);
+    uint8_t buf[6];
 
-  /* Wait until TXIS flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_TXIS) == RESET)
-  {
-  }
-  
-  if(NumByteToRead>1)
-      readAddr |= 0x80;
+    IICreadBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 6, buf);
+    accData[0] = (int16_t)((buf[0] << 8) | buf[1]);
+    accData[1] = (int16_t)((buf[2] << 8) | buf[3]);
+    accData[2] = (int16_t)((buf[4] << 8) | buf[5]);
 
-  /* Send Register address */
-  I2C_SendData(MPU6050_I2C, (uint8_t)readAddr);
-  
-  /* Wait until TC flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_TC) == RESET)
-  {
-  }  
-
-  /* Configure slave address, nbytes, reload, end mode and start or stop generation */
-  I2C_TransferHandling(MPU6050_I2C, slaveAddr, NumByteToRead, I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
-  
-  /* Wait until all data are received */
-  while (NumByteToRead)
-  {   
-    /* Wait until RXNE flag is set */
-    while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_RXNE) == RESET)    
-    {
-    }
-    
-    /* Read data from RXDR */
-    *pBuffer = I2C_ReceiveData(MPU6050_I2C);
-    /* Point to the next location where the byte read will be saved */
-    pBuffer++;
-    
-    /* Decrement the read bytes counter */
-    NumByteToRead--;
-  } 
-
-  /* Wait until STOPF flag is set */
-  while(I2C_GetFlagStatus(MPU6050_I2C, I2C_ISR_STOPF) == RESET)   
-  {
-  }
-  
-  /* Clear STOPF flag */
-  I2C_ClearFlag(MPU6050_I2C, I2C_ICR_STOPCF);
 
 }
-
-
-//ֱ��д�Ĵ���
-void MPU6050_Write(uint8_t slaveAddr, uint8_t regAddr, uint8_t data) 
+//读角速度
+void MPU6050GyroRead(int16_t *gyroData)
 {
-  uint8_t tmp;  
-  tmp = data;
-  MPU6050_I2C_ByteWrite(slaveAddr,&tmp,regAddr);   
+    uint8_t buf[6];
+
+    IICreadBytes(devAddr, MPU6050_RA_GYRO_XOUT_H, 6, buf);
+    gyroData[0] = (int16_t)((buf[0] << 8) | buf[1]) ;
+    gyroData[1] = (int16_t)((buf[2] << 8) | buf[3]) ;
+    gyroData[2] = (int16_t)((buf[4] << 8) | buf[5]) ;
 }
+
+

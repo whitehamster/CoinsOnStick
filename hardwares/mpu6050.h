@@ -1,48 +1,16 @@
-//MPU6050 I2C library for ARM STM32F103xx Microcontrollers - Main header file 
-//Has bit, byte and buffer I2C R/W functions
-// 23/05/2012 by Harinadha Reddy Chintalapalli <harinath.ec@gmail.com>
-// Changelog:
-//     2012-05-23 - initial release. Thanks to Jeff Rowberg <jeff@rowberg.net> for his AVR/Arduino
-//                  based development which inspired me & taken as reference to develop this.
-/* ============================================================================================
- MPU6050 device I2C library code for ARM STM32F103xx is placed under the MIT license
- Copyright (c) 2012 Harinadha Reddy Chintalapalli
+#ifndef __MPU6050_H_
+#define __MPU6050_H_
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+#include "stm32f30x.h"
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
+#define devAddr  0xD0
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ================================================================================================
- */
+#define gyro_zOFFSET		0.79		//待测
+#define StickLength			1.5			//(米)
+#define MPU6050_ONE_G		9.80665f
+#define Gyro1000scale_JD	(32768.0/250.0)	// 131.1 LSB/(deg/sec)
+#define Acc1000scale_JD		(32768.0/4.0)	// 8192 LSB/g
 
-#ifndef _MPU6050_H_
-#define _MPU6050_H_
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Includes */
-#include "HAL_MPU6050.h"
-#include "delay.h"
-#include "exti.h"
-
-#define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
-#define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
-#define MPU6050_DEFAULT_ADDRESS     (MPU6050_ADDRESS_AD0_LOW<<1)
 
 #define MPU6050_RA_XG_OFFS_TC       0x00 //[7] PWR_MODE, [6:1] XG_OFFS_TC, [0] OTP_BNK_VLD
 #define MPU6050_RA_YG_OFFS_TC       0x01 //[7] PWR_MODE, [6:1] YG_OFFS_TC, [0] OTP_BNK_VLD
@@ -304,7 +272,8 @@ extern "C" {
 #define MPU6050_INTERRUPT_DMP_INT_BIT       1
 #define MPU6050_INTERRUPT_DATA_RDY_BIT      0
 
-// TODO: Need to work on DMP related things
+// TODO: figure out what these actually do
+// UMPL source code is not very obivous
 #define MPU6050_DMPINT_5_BIT            5
 #define MPU6050_DMPINT_4_BIT            4
 #define MPU6050_DMPINT_3_BIT            3
@@ -393,38 +362,21 @@ extern "C" {
 #define MPU6050_DMP_MEMORY_BANK_SIZE    256
 #define MPU6050_DMP_MEMORY_CHUNK_SIZE   16
 
-void MPU6050_Initialize(void);
-int MPU6050_TestConnection(void);
 
-// GYRO_CONFIG register
-uint8_t MPU6050_GetFullScaleGyroRange(void);
-void MPU6050_SetFullScaleGyroRange(uint8_t range);
-// ACCEL_CONFIG register
-uint8_t MPU6050_GetFullScaleAccelRange(void);
-void MPU6050_SetFullScaleAccelRange(uint8_t range);
 
-// PWR_MGMT_1 register
-int MPU6050_GetSleepModeStatus(void);
-void MPU6050_SetSleepModeStatus(FunctionalState NewState);
-void MPU6050_SetClockSource(uint8_t source);
-// WHO_AM_I register
-uint8_t MPU6050_GetDeviceID(void);
 
-void MPU6050_GetRawAccelGyro(s16* AccelGyro);
 
-void MPU6050_WriteBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data);
-void MPU6050_WriteBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data);
-void MPU6050_ReadBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data);
-void MPU6050_ReadBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data);
-void MPU6050_Write(uint8_t slaveAddr, uint8_t writeAddr, uint8_t pBuffer);
+extern double angleY;
+extern uint8_t buffer[14]; //暂存器
 
-void MPU6050_I2C_Init(void);
-void MPU6050_I2C_ByteWrite(u8 slaveAddr, u8* pBuffer, u8 writeAddr);
-void MPU6050_I2C_BufferRead(u8 slaveAddr,u8* pBuffer, u8 readAddr, u16 NumByteToRead);
-
-#ifdef __cplusplus
-}
+//供外部调用的API
+double read_angleY(void);
+void MPU6050_initialize(void); //初始化
+void MPU6050GyroRead(int16_t *gyroData);
+void MPU6050AccRead(int16_t *accData);
+uint8_t MPU6050_testConnection(void); //检测MPU6050是否存在
+uint8_t MPU6050_getDeviceID(void);
+void MPU6050_Check(void);
 #endif
 
-#endif /* __MPU6050_H */
-/******************* (C) COPYRIGHT 2012 Harinadha Reddy Chintalapalli *****END OF FILE****/
+

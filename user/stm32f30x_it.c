@@ -28,20 +28,30 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-
+#include "delay.h"
+#include "TIM_init.h"
+#include "MPU6050.h"
+#include "motor.h"
+#include "usart.h"
 /** @addtogroup STM32F3_Discovery_Peripheral_Examples
   * @{
   */
 
-/** @addtogroup GPIO_IOToggle
+/** @addtogroup SysTick_Handler
   * @{
   */
+ 
+/** @addtogroup DMA1_Channel6_IRQHandler
+  * @{
+  */
+
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+extern __IO uint32_t EndOfTransfer;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -147,6 +157,24 @@ void SysTick_Handler(void)
   TimingDelay_Decrement();
 }
 
+/**
+  * @brief  This function handles DMA1_Channel6_IRQ Handler.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel6_IRQHandler(void)
+{
+	/* Test on DMA1 Channel6 Transfer Complete interrupt */
+  if(DMA_GetITStatus(DMA1_IT_TC6))
+  {
+    /* DMA1 finished the transfer of SrcBuffer */
+    EndOfTransfer = 1;
+
+    /* Clear DMA1 Channel6 Half Transfer, Transfer Complete and Global interrupt pending bits */
+    DMA_ClearITPendingBit(DMA1_IT_GL6);
+  }
+}
+
 /******************************************************************************/
 /*                 STM32F30x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -162,6 +190,31 @@ void SysTick_Handler(void)
 {
 }*/
 
+/**
+  * @brief  This function handles EXTI0_IRQ Handler.
+  * @note	每进次中断取一次数据
+			主优先级: 4
+  * @param  None
+  * @retval None
+  */
+void EXTI1_IRQHandler(void)
+{
+	double angleY = 0;
+	printf("into EXTI0_IRQHandler");
+//	if((EXTI_GetITStatus(EXTI_Line0)==SET) && (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1)==Bit_SET)){
+		EXTI_ClearITPendingBit(EXTI_Line1);
+		angleY = read_angleY();
+		printf("angleY = %.2lf\n",angleY);
+//		StepMotor_move(angleY);
+//	}
+}
+
+//void TIM2_IRQHandler(void)
+//{
+//	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+//	printf("into IT");
+//	
+//}
 /**
   * @}
   */ 

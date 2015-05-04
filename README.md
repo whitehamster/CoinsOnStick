@@ -4,6 +4,5 @@
 keil 4.70 stm32f3discovery
 
 PA2 -> usart2 tx
+
 PA3 -> usart2 rx
-PB6 -> iic scl
-PB7 -> iic sda
