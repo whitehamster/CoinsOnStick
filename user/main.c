@@ -27,9 +27,12 @@
 		YES: 
 		NO:	DMP_Routing(); w不对
 			修改 IICwriteBits() 尚未调试
+			添加KalmanFilter 尚未调试
+			待理解语录: 考虑到电机的转动频率是100Hz以上，因此我采用加速度计的低通滤波(DLPF)为98Hz, 
+		可以有效滤掉电机振动带来的影响, 结合平滑滤波效果应该不错.(已加，待测)
+			
 */
-//待理解语录: 考虑到电机的转动频率是100Hz以上，因此我采用加速度计的低通滤波(DLPF)为98Hz, 
-//            可以有效滤掉电机振动带来的影响, 结合平滑滤波效果应该不错.
+
 
 #include "main.h"
 
@@ -42,28 +45,31 @@ int main(){
 	/* 初始化 */
 	usart2_init();			//串口2初始化
 	delay_init();			//延时初始化
-	
 	IIC_Init();				//软件模拟IIC初始化
 	MPU6050_initialize();	//初始化MPU6050
-	MPU6050_DMP_Initialize();
-	EXTI1_Config();			//中断初始化( 须在DMP初始化之后配置 )
-	SetZeroPoint();			//等待DMP零点设置成功
+	EXTI1_Config();			//中断初始化
+	/*对加速度计解算的角度进行的处理*/
+	cal_AccAngleY();		
+	LowerFilter_init();		
+	LowerFilter(S_FLOAT_AccAngle.AngleY);//低通滤波(加速度计)
 	
-	StepMotor_IOconf();		//步进电机管脚配置
-	StepMotor_init();		//初始化步进电机(确认初始稳定时角度)
+	TIM3ch1_ITInit();		//定时解算初始化
+	
+//	StepMotor_IOconf();		//步进电机管脚配置
+//	StepMotor_init();		//初始化步进电机(确认初始稳定时角度)
 	
 	while(1){
-		angleY = Q_ANGLE.Yaw-Angle_ZeroPoint;
-		//printf("angleY = %f\n",angleY);
-		StepMotor_move(AcculateMotorMoveAngle());// 转动电机 
+		
+		printf("angleY = %f\n",angleY);
+		
+
 	}
 	return 1;
 }
 
-
-
-
-
+//		angleY = Q_ANGLE.Yaw-Angle_ZeroPoint;
+//		//printf("angleY = %f\n",angleY);
+//		StepMotor_move(AcculateMotorMoveAngle());// 转动电机 
 //		printf("Q_ANGLE.Yaw = %f\n",Q_ANGLE.Yaw);
 //		printf("DMP_DATA.dmp_gyroz = %f\n",DMP_DATA.dmp_gyroz);
 

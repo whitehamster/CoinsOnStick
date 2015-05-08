@@ -10,9 +10,7 @@
 
 #define TOSTEP (1.8/8)
 
-extern float Angle_pre; //先前角度
-extern uint8_t SetZeroPoint_Flag;//设置零点 标志位
-extern float Angle_ZeroPoint;//零点偏移点
+
 void StepMotor_init(void);
 void StepMotor_IOconf(void);
 void StepMotor_move(float Angle_now);

@@ -17,30 +17,14 @@
 #include "MPU6050.h"
 #include "delay.h"
 #include "usart.h"
-#include <math.h>
-#include "DMP.h"
+#include "cal.h"
 #include "MPU6050.h"
+#include "extern_variable.h"
+#include "math.h"
 
 
 
 
-
-//返回度数值
-float AcculateMotorMoveAngle(void)
-{
-	int16_t gyroData[3] ={0};
-	float AngleToMove = 0;
-	float w_z;
-	
-	MPU6050GyroRead(gyroData);
-	w_z = (gyroData[2]/131.072f)*TORAD;
-	//printf("w_z = %f\n",w_z);
-	AngleToMove = asin( (MPU6050_ONE_G*sin(angleY*TORAD))/				\
-					sqrt((MPU6050_ONE_G*MPU6050_ONE_G)+((w_z*w_z*StickLength)*(w_z*w_z*StickLength+2*MPU6050_ONE_G*cos(angleY*TORAD)))) );
-					/* AlPhe = arcsin{ g*sin(angleY)/sqrt[g^2+(w^2 * r)*((w^2 * r)+2g*cos(angleY))] } */
-	//printf("AngleToMove = %f\n",AngleToMove/TORAD);
-	return (AngleToMove/TORAD);
-}
 
 /*
 	*功能	步进电机初始化
@@ -114,43 +98,42 @@ void StepMotor_IOconf(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
-/*
-	*功能	设置零漂点
-*/
-uint8_t SetZeroPoint_Flag = 0;
-float Angle_ZeroPoint = 0;
-void SetZeroPoint(void)
-{
-	float Q_ANGLE_temp[4] = {0};
-	uint8_t i = 0;
-	//printf("into SetZeroPoint\n");
-	while(1){
-		SetZeroPoint_Flag = 0;
-		while(SetZeroPoint_Flag == 0){
-			//printf("Q_ANGLE.Yaw = %f\n",Q_ANGLE.Yaw);
-		}
-		if(i==0){
-			Q_ANGLE_temp[0] = Q_ANGLE.Yaw;
-		}
-		else if(i==9){
-			Q_ANGLE_temp[1] = Q_ANGLE.Yaw;
-		}
-		else if(i==19){
-			Q_ANGLE_temp[2] = Q_ANGLE.Yaw;
-		}
-		else if(i==29){
-			Q_ANGLE_temp[3] = Q_ANGLE.Yaw;
-		}
-		i++;
-		if(i==30){
-			if((fabs(Q_ANGLE_temp[0]-Q_ANGLE_temp[1]) < 0.4)		\
-			&&(fabs(Q_ANGLE_temp[2]-Q_ANGLE_temp[3]) < 0.4)){
-				Angle_ZeroPoint = Q_ANGLE_temp[3];
-				break;
-			}
-			else{
-				i = 0;
-			}
-		}
-	}
-}
+///*
+//	*功能	设置零漂点
+//*/
+
+//void SetZeroPoint(void)
+//{
+//	float Q_ANGLE_temp[4] = {0};
+//	uint8_t i = 0;
+//	//printf("into SetZeroPoint\n");
+//	while(1){
+//		SetZeroPoint_Flag = 0;
+//		while(SetZeroPoint_Flag == 0){
+//			//printf("Q_ANGLE.Yaw = %f\n",Q_ANGLE.Yaw);
+//		}
+//		if(i==0){
+//			Q_ANGLE_temp[0] = Q_ANGLE.Yaw;
+//		}
+//		else if(i==9){
+//			Q_ANGLE_temp[1] = Q_ANGLE.Yaw;
+//		}
+//		else if(i==19){
+//			Q_ANGLE_temp[2] = Q_ANGLE.Yaw;
+//		}
+//		else if(i==29){
+//			Q_ANGLE_temp[3] = Q_ANGLE.Yaw;
+//		}
+//		i++;
+//		if(i==30){
+//			if((fabs(Q_ANGLE_temp[0]-Q_ANGLE_temp[1]) < 0.4)		\
+//			&&(fabs(Q_ANGLE_temp[2]-Q_ANGLE_temp[3]) < 0.4)){
+//				Angle_ZeroPoint = Q_ANGLE_temp[3];
+//				break;
+//			}
+//			else{
+//				i = 0;
+//			}
+//		}
+//	}
+//}

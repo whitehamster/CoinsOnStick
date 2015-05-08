@@ -445,6 +445,16 @@
               <FileType>2</FileType>
               <FilePath>.\user\startup_stm32f30x.s</FilePath>
             </File>
+            <File>
+              <FileName>DMP.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardwares\DMP.c</FilePath>
+            </File>
+            <File>
+              <FileName>TIM_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\TIM_init.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

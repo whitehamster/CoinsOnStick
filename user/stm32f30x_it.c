@@ -32,13 +32,14 @@
 #include "MPU6050.h"
 #include "motor.h"
 #include "usart.h"
-#include "DMP.h"
+#include "cal.h"
+#include "extern_variable.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern __IO uint32_t EndOfTransfer;
+extern __IO uint32_t EndOfTransfer;//DMA传输完毕标志位
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -145,8 +146,7 @@ void PendSV_Handler(void)
 /**
   * @brief  This function handles EXTI1_IRQ Handler.
   * @note	每进次中断取一次数据
-			进入优先级: 2
-			不可打断优先级 2
+			占先式优先级 2
   * @param  None
   * @retval None
   */
@@ -155,9 +155,9 @@ void EXTI1_IRQHandler(void)
 
 	if(EXTI_GetITStatus(EXTI_Line1)==SET){
 		EXTI_ClearITPendingBit(EXTI_Line1);
+		MPU6050GyroRead(GyroData);
+		MPU6050AccRead(AccData);
 		SetZeroPoint_Flag = 1;	//
-		DMP_Routing();
-		DMP_getYawPitchRoll();
 	}
 }
 
@@ -178,12 +178,27 @@ void DMA1_Channel6_IRQHandler(void)
     DMA_ClearITPendingBit(DMA1_IT_GL6);
   }
 }
-
+/* 	作为延时函数1us
+	占先式优先级 0
+*/
 void TIM2_IRQHandler(void)
 {
-	if( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
+	if( TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET ) 
     {
 		TimingDelay_Decrement();
+		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);   //清除中断标志  
+	}
+}
+/* 	运算之用10ms
+	占先式优先级 1
+*/
+void TIM3_IRQHandler(void)
+{
+	if( TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET ) 
+    {
+//		cal_GyroAngleY();
+		cal_AccAngleY();
+		KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleZ);
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);   //清除中断标志  
 	}
 }
