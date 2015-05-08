@@ -1,3 +1,6 @@
+#ifndef __main_h
+#define __main_h
+
 #include "stm32f30x.h"
 #include "stm32f30x_it.h"
 #include "usart.h"
@@ -8,3 +11,7 @@
 #include "MPU6050.h"
 #include "motor.h"
 #include "exit_init.h"
+#include "DMP.h"
+#include "extern_variable.h"
+
+#endif

@@ -1,22 +1,15 @@
 #include "delay.h"
+#include "TIM_init.h"
 
 void delay_init(void){
-	//设置时钟源为AHB=72MHz
-	/*
-		Counting down to zero to asserts the SysTick exception request
-		====>1次中断/1us
-	*/
-	//预装载值72
-	//若装载值错误则止步
-	//设置中断时间为8000000 / 1000000 = 8                    --------------------
-	while(SysTick_Config(SystemCoreClock / 1000000))
-		;
+	TIM2ch1_ITInit();		//1us
 }
 
-void delay_us(__IO uint32_t usTime){ //------------------------------------
-  TimingDelay = usTime;
-
-  while(TimingDelay != 0);
+void delay_us(__IO uint32_t usTime){ 
+	NVIC_DisableIRQ(EXTI1_IRQn);
+	TimingDelay = usTime;
+	while(TimingDelay != 0);
+	NVIC_EnableIRQ(EXTI1_IRQn);
 }  
 								   
 void delay_ms(__IO uint32_t msTime){
@@ -25,10 +18,9 @@ void delay_ms(__IO uint32_t msTime){
 		msTime--;
 	}
 }
-
-void TimingDelay_Decrement(void) //---------------------------------------
+void TimingDelay_Decrement(void)
 {
-  if (TimingDelay != 0x00){ 
+	if (TimingDelay != 0x00){ 
     TimingDelay--;
   }
 }

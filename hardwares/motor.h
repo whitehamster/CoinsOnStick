@@ -8,11 +8,14 @@
 //输出, s为 0~1, n取 0~31
 #define PAout(n,s)		(s?(BitBand_ADDR(GPIOA_ODR_Addr)|=(1<<n)):(BitBand_ADDR(GPIOA_ODR_Addr)&=(~(1<<n))))
 
-#define STEP (1.8/8)
+#define TOSTEP (1.8/8)
 
-extern double Angle_pre; //先前角度
-
-void StepMotor_init();
+extern float Angle_pre; //先前角度
+extern uint8_t SetZeroPoint_Flag;//设置零点 标志位
+extern float Angle_ZeroPoint;//零点偏移点
+void StepMotor_init(void);
 void StepMotor_IOconf(void);
-void StepMotor_move(double Angle_now);
+void StepMotor_move(float Angle_now);
+void SetZeroPoint(void);//设置零点
+float AcculateMotorMoveAngle(void);//计算电机需转角度值
 #endif

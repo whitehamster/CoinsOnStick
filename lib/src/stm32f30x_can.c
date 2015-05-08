@@ -295,7 +295,7 @@ uint8_t CAN_Init(CAN_TypeDef* CANx, CAN_InitTypeDef* CAN_InitStruct)
     }
   }
 
-  /* At this step, return the status of initialization */
+  /* At this STEP, return the status of initialization */
   return InitStatus;
 }
 

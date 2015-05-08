@@ -1,6 +1,6 @@
 #include "usart.h"
 #include "delay.h"
-#include "stdio.h"
+
 uint16_t DstBuffer[BUFFER_SIZE] = {0};
 __IO uint32_t EndOfTransfer = 0;
 	

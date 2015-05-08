@@ -240,7 +240,7 @@ uint8_t IICreadBytes(uint8_t dev, uint8_t reg, uint8_t length, uint8_t *data){
 *返回		返回是否成功
 *******************************************************************************/ 
 uint8_t IICwriteBytes(uint8_t dev, uint8_t reg, uint8_t length, uint8_t* data){
-  
+	
  	uint8_t count = 0;
 	IIC_Start();
 	IIC_Send_Byte(dev);	   //发送写命令
@@ -252,7 +252,6 @@ uint8_t IICwriteBytes(uint8_t dev, uint8_t reg, uint8_t length, uint8_t* data){
 		IIC_Wait_Ack(); 
 	 }
 	IIC_Stop();//产生一个停止条件
-
     return 1; //status == 0;
 }
 
@@ -297,9 +296,11 @@ uint8_t IICwriteBits(uint8_t dev,uint8_t reg,uint8_t bitStart,uint8_t length,uin
 
     uint8_t b;
     if (IICreadByte(dev, reg, &b) != 0) {
-        uint8_t mask = (0xFF << (bitStart + 1)) | 0xFF >> ((8 - bitStart) + length - 1);
-        data <<= (8 - length);
-        data >>= (7 - bitStart);
+        //uint8_t mask = (0xFF << (bitStart + 1)) | 0xFF >> ((8 - bitStart) + length - 1);
+        uint8_t mask = (0xFF << ((8 - bitStart) + length - 1)) | 0xFF >> (8 - bitStart + 1);
+		data <<= (8 - length);
+        //data >>= (7 - bitStart);
+		data <<= (bitStart-1);
         b &= mask;
         b |= data;
         return IICwriteByte(dev, reg, b);

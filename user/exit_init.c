@@ -1,9 +1,10 @@
 #include "exit_init.h"
-
+#include "usart.h"
 
 
 // 设置中断源EXTI1 : PA.1
 // 上升沿触发中断以读取MPU6050数据
+// 进入优先级 0
 void EXTI1_Config(void)
 {
 	EXTI_InitTypeDef   EXTI_InitStructure;
@@ -29,11 +30,11 @@ void EXTI1_Config(void)
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising; //上升沿触发中断
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
-	/* Enable and set EXTI0 Interrupt to the lowest priority */
+	/* Enable and set EXTI1 Interrupt to the lowest priority */
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);//4 bits for pre-emption priority	0 bits for subpriority
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	printf("EXTI1_Configed");
+	printf("EXTI1_Configed\n");
 }

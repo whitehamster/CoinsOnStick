@@ -2,7 +2,7 @@
 
 
 /*
-	*每10ms触发一次中断
+	*每1us触发一次中断
 	
 */
 void TIM2ch1_ITInit(void)
@@ -13,14 +13,14 @@ void TIM2ch1_ITInit(void)
 	
 	//时基初始化
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-	TIM_TimeBaseStructure.TIM_Period = 10000-1; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Period = 1; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler = 72-1; 
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //加计数
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 	/* Enable the TIM2 Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;            //TIM2_IRQn
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;     //占先式优先级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     //占先式优先级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	TIM_ClearFlag(TIM2, TIM_FLAG_Update);		    //清除定时器3中断标志
