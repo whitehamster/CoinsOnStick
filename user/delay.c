@@ -6,10 +6,9 @@ void delay_init(void){
 }
 
 void delay_us(__IO uint32_t usTime){ 
-	NVIC_DisableIRQ(EXTI1_IRQn);
 	TimingDelay = usTime;
-	while(TimingDelay != 0);
-	NVIC_EnableIRQ(EXTI1_IRQn);
+	while(TimingDelay != 0)
+		;
 }  
 								   
 void delay_ms(__IO uint32_t msTime){

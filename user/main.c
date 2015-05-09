@@ -25,11 +25,14 @@
 		2015/5/5
 	*进度:
 		YES: 
-		NO:	DMP_Routing(); w不对
-			修改 IICwriteBits() 尚未调试
-			添加KalmanFilter 尚未调试
-			待理解语录: 考虑到电机的转动频率是100Hz以上，因此我采用加速度计的低通滤波(DLPF)为98Hz, 
-		可以有效滤掉电机振动带来的影响, 结合平滑滤波效果应该不错.(已加，待测)
+		NO:	添加KalmanFilter 尚未调试（精度待确认）
+			Acc低通滤波未调试
+			考虑到电机的转动频率是100Hz以上，因此我采用加速度计的低通滤波(DLPF)为98Hz, 
+		可以有效滤掉电机振动带来的影响, 结合平滑滤波效果应该不错.(已加，待加电机测试)
+			
+			
+	*NONO:
+		TIM3(100ms)读取数据（使用Tim2作延时函数），结果停在delay函数中的while中
 			
 */
 
@@ -47,20 +50,30 @@ int main(){
 	delay_init();			//延时初始化
 	IIC_Init();				//软件模拟IIC初始化
 	MPU6050_initialize();	//初始化MPU6050
-	EXTI1_Config();			//中断初始化
+//	EXTI1_Config();			//中断初始化
 	/*对加速度计解算的角度进行的处理*/
-	cal_AccAngleY();		
-	LowerFilter_init();		
-	LowerFilter(S_FLOAT_AccAngle.AngleY);//低通滤波(加速度计)
-	
+//	delay_ms(15);
+//	cal_AccAngleY();		
+//	LowerFilter_init();		
+//	LowerFilter(S_FLOAT_AccAngle.AngleY);//低通滤波(加速度计)
 	TIM3ch1_ITInit();		//定时解算初始化
-	
+	SetZeroPoint();			//设置零漂移点
 //	StepMotor_IOconf();		//步进电机管脚配置
 //	StepMotor_init();		//初始化步进电机(确认初始稳定时角度)
 	
 	while(1){
+		/*解算角度*/
+		if(ReceiveDataEn == 1){
+			ReceiveDataEn = 0;
+			MPU6050GyroRead(GyroData);
+			MPU6050AccRead(AccData);
+			//printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
+			cal_GyroAngleY();
+			cal_AccAngleY();
+			KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleZ);
+			//printf("angleY = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY,S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleZ);
+		}
 		
-		printf("angleY = %f\n",angleY);
 		
 
 	}

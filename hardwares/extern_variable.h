@@ -3,6 +3,8 @@
 
 	#include "stdint.h"
 	
+	
+	
 	/* * * 传感器 * * */
 	//标志位
 	volatile extern uint8_t 	MPU6050_I2CData_Ready;		//mpu6050读取完成标志,=1表示读取完成

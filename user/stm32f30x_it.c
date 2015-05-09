@@ -143,10 +143,12 @@ void PendSV_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f30x.s).                                            */
 /******************************************************************************/
+
+
 /**
   * @brief  This function handles EXTI1_IRQ Handler.
   * @note	每进次中断取一次数据
-			占先式优先级 2
+			占先式优先级 1
   * @param  None
   * @retval None
   */
@@ -155,9 +157,11 @@ void EXTI1_IRQHandler(void)
 
 	if(EXTI_GetITStatus(EXTI_Line1)==SET){
 		EXTI_ClearITPendingBit(EXTI_Line1);
-		MPU6050GyroRead(GyroData);
-		MPU6050AccRead(AccData);
-		SetZeroPoint_Flag = 1;	//
+//		MPU6050GyroRead(GyroData);
+//		MPU6050AccRead(AccData);
+//		printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
+		
+		
 	}
 }
 
@@ -186,20 +190,18 @@ void TIM2_IRQHandler(void)
 	if( TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET ) 
     {
 		TimingDelay_Decrement();
-		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);   //清除中断标志  
+		TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);   //清除中断标志  
 	}
 }
 /* 	运算之用10ms
-	占先式优先级 1
+	占先式优先级 2
 */
 void TIM3_IRQHandler(void)
 {
 	if( TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET ) 
     {
-//		cal_GyroAngleY();
-		cal_AccAngleY();
-		KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleZ);
-		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);   //清除中断标志  
+		TIM_ClearITPendingBit(TIM3, TIM_FLAG_Update);   //清除中断标志 
+		ReceiveDataEn = 1;
 	}
 }
 

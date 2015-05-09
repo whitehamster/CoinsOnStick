@@ -104,6 +104,7 @@ void LowerFilter_init(void)
 			读取得第一次数据之后
 	*使用全局变量
 			S_FLOAT_AccAngle.AngleY(deg)
+			S_FLOAT_AccAngle.ZeroPointY(deg)
 	*输出	S_FLOAT_AccAngle.AngleY(deg)
 */
 float cal_AccAngleY(void)
@@ -111,7 +112,7 @@ float cal_AccAngleY(void)
 	float acc_Y = 0;//沿Y正方向加速度(g)
 	
 	//printf("into cal_AccAngleY\n");
-	acc_Y = AccData[1]/Acc4scale_JD;
+	acc_Y = (AccData[1]/Acc4scale_JD-S_FLOAT_AccAngle.ZeroPointY);
 	S_FLOAT_AccAngle.AngleY = asin(acc_Y)/TORAD;//arcsin(acc_Y/g)*(180/3.14159)
 	//printf("cal_AccAngleY\tY %.2f`\n",S_FLOAT_AccAngle.AngleY);
 	
@@ -123,7 +124,9 @@ float cal_AccAngleY(void)
 			读取得第一次数据之后
 	*使用全局变量
 			S_FLOAT_GyroAngle.AngleZ(deg)
+			S_FLOAT_GyroAngle.ZeroPointZ(deg)
 	*输出	S_FLOAT_GyroAngle.AngleZ(deg)
+	*疑问	
 */
 float cal_GyroAngleY(void)
 {
@@ -136,8 +139,42 @@ float cal_GyroAngleY(void)
 	
 	return S_FLOAT_GyroAngle.AngleZ;
 }
-
-
+/* 设置零漂点 */
+void SetZeroPoint(void)
+{
+	uint8_t loop_i = 0;
+	int32_t sum = 0;
+	
+	for(loop_i=0;loop_i<100;loop_i++){
+		if((loop_i>=0)&&(loop_i<5)){
+			MPU6050GyroRead(GyroData);
+		}
+		else if((loop_i>=5)&&(loop_i<100)){
+			MPU6050GyroRead(GyroData);
+			cal_GyroAngleY();
+			sum += S_FLOAT_GyroAngle.AngleZ;
+		}
+	}
+	S_FLOAT_GyroAngle.ZeroPointZ = sum/95.0;
+	sum = 0;
+	loop_i=0;
+	printf("S_FLOAT_GyroAngle.ZeroPointZ = %.2f\n",S_FLOAT_GyroAngle.ZeroPointZ);
+	
+	for(loop_i=0;loop_i<100;loop_i++){
+		if((loop_i>=0)&&(loop_i<5)){
+			MPU6050AccRead(AccData);
+		}
+		else if((loop_i>=5)&&(loop_i<100)){
+			MPU6050AccRead(AccData);
+			cal_AccAngleY();
+			sum += S_FLOAT_AccAngle.AngleY;
+		}
+	}
+	S_FLOAT_AccAngle.ZeroPointY = sum/95.0;
+	sum = 0;
+	loop_i=0;
+	printf("S_FLOAT_AccAngle.ZeroPointY = %.2f\n",S_FLOAT_AccAngle.ZeroPointY);
+}
 
 ///*
 //	*功能	算出电机需转角度值, 并返回

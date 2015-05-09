@@ -13,4 +13,5 @@
 	float cal_AccAngleY(void);
 	float cal_GyroAngleY(void);
 	void KalmanFilter_Y(float Accel,float Gyro);
+	void SetZeroPoint(void);
 #endif
