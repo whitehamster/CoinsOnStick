@@ -12,11 +12,11 @@
 void MPU6050_initialize(void) {
 	IICwriteByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80);     	//唤醒
     delay_ms(50);
-    IICwriteByte(devAddr, MPU6050_RA_SMPLRT_DIV, 0x01);      	//Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
+    IICwriteByte(devAddr, MPU6050_RA_SMPLRT_DIV, 0x07);      	//Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
 	IICwriteByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x03);      	//CLKSEL 3 (PLL with Z Gyro reference)
 	IICwriteByte(devAddr, MPU6050_RA_INT_PIN_CFG, (1<<4));		//interrupt status bits are cleared on any read operation
 	IICwriteByte(devAddr, MPU6050_RA_INT_ENABLE, (1<<0));		//interrupt occurs when data is ready. 
-	IICwriteByte(devAddr, MPU6050_RA_CONFIG, 0x02);				//ACC bandwidth = 94Hz  GYRO bandwidth = 98Hz)
+	IICwriteByte(devAddr, MPU6050_RA_CONFIG, 0x03);				//ACC bandwidth = 94Hz  GYRO bandwidth = 98Hz)
 	IICwriteByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x00);		//Full scale set to 250 deg/sec
     IICwriteByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 1 << 3);		//Full scale set to 4g
 	printf("MPU6050_initialized\n");

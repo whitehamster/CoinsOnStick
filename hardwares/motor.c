@@ -49,17 +49,19 @@ void StepMotor_init(void)
 
 /*
 	*功能	步进电机驱动(采用绝对坐标旋转)
+			v=225/ms  (deg/s)
 	*常量
 			先前角度	Angle_pre
 	*输入	
 			现要求角度	(float)Angle_now
+						(uint8_t)ms
 	*输出	
 			无
 */
-void StepMotor_move(float Angle_now)
+void StepMotor_move(float Angle_now, uint8_t us)
 {
 	float AngleToMove = 0.0;
-	float StepToMove = 0.0;
+	uint32_t StepToMove = 0;
 	
 	//printf("Angle_pre = %f\n",Angle_pre);
 	if(Angle_now != Angle_pre){
@@ -70,11 +72,14 @@ void StepMotor_move(float Angle_now)
 		else if(AngleToMove > 0.0){
 			PAout(5,1);		//反转
 		}
+		printf("AngleToMove = %f\tAngle_now = %f\tAngle_pre = %f\n",AngleToMove,Angle_now,Angle_pre);
 		StepToMove = fabs(AngleToMove/TOSTEP);
-		for(;StepToMove>2;StepToMove--){
+		
+		for(;StepToMove>0;StepToMove--){
 			PAout(4,1);
-			delay_us(500);
+			delay_us(10);
 			PAout(4,0);
+			delay_us(us);
 		}
 		Angle_pre = Angle_now;
 	}

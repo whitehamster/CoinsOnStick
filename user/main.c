@@ -12,7 +12,7 @@
 		ReceiveDataEn			接收MPU6050数据使能
 		Angle_pre				先前电机(平板)角度寄存器
 		buffer[14]				IIC读取MPU6050数据暂存器
-		angleY					摆杆与竖直方向夹角
+		angleY[1]					摆杆与竖直方向夹角
 		AccData[3]				
 		GyroData[3]				
 		SetZeroPoint_Flag		设置零点 标志位
@@ -39,52 +39,171 @@
 
 #include "main.h"
 
+float buff_angle,buff_angel_int;
+
 	
 
 
 
 
 int main(){
+	int8_t Kp = 1,Ki,Kd;
+	int32_t e[2] ={0};
+	uint32_t loop_i = 0;
+	
 	/* 初始化 */
 	usart2_init();			//串口2初始化
 	delay_init();			//延时初始化
 	IIC_Init();				//软件模拟IIC初始化
 	MPU6050_initialize();	//初始化MPU6050
-//	EXTI1_Config();			//中断初始化
-	/*对加速度计解算的角度进行的处理*/
-//	delay_ms(15);
-//	cal_AccAngleY();		
-//	LowerFilter_init();		
-//	LowerFilter(S_FLOAT_AccAngle.AngleY);//低通滤波(加速度计)
-	TIM3ch1_ITInit();		//定时解算初始化
-	SetZeroPoint();			//设置零漂移点
-//	StepMotor_IOconf();		//步进电机管脚配置
-//	StepMotor_init();		//初始化步进电机(确认初始稳定时角度)
-	
-	while(1){
-		/*解算角度*/
-		if(ReceiveDataEn == 1){
-			ReceiveDataEn = 0;
-			MPU6050GyroRead(GyroData);
-			MPU6050AccRead(AccData);
-			//printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
-			cal_GyroAngleY();
-			cal_AccAngleY();
-			KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleZ);
-			//printf("angleY = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY,S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleZ);
-		}
-		
-		
 
+	TIM3ch1_ITInit();		//定时解算初始化10ms
+	SetZeroPoint();			//设置零漂移点
+	StepMotor_IOconf();		//步进电机管脚配置
+	StepMotor_init();		//初始化步进电机(确认初始稳定时角度)
+	
+	ad_init();				//电位器ad初始化
+	TIM4_Init(72,50000);	//50ms定时计算摆杆角速度
+	
+	
+	
+	TIM1ch1_ITInit();		//TIM_Cmd(TIM1,ENABLE);
+							//loop_i = TIM_GetCounter(TIM1);
+							//*******   需测运行时间的函数体
+							//loop_i = TIM_GetCounter(TIM1) - loop_i;
+							//printf("\n %dus\n",loop_i);
+//	/*task 2*/
+//	Task2_Exti_Config();
+	
+
+
+	
+	//		用手推动摆杆至一个角度 θ （ θ 在 45o～60o间） ，调整平板角度，在
+	//	平板中心稳定叠放 8 枚 1 元硬币，见图 2；启动后放开摆杆让其自由
+	//	摆动。在摆杆摆动过程中，要求控制平板状态使硬币在摆杆的 5 个摆
+	//	动周期中不从平板上滑落，并保持叠放状态。根据平板上非保持叠放
+	//	状态及滑落的硬币数计算成绩。
+	//
+	while(3){
+//		cal_angle();
+//		printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+//		StepMotor_move(20, 1);
+//		
+//		printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+//		
+		
+		cal_angle();
+		
+		
+		
+		
+//		StepMotor_move(AcculateMotorMoveAngle() + Kp*e[1], 1);
+//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
+//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
+//		e[1] = AcculateMotorMoveAngle()-angleY[1];
+//		e[0] = e[1];
+//		StepMotor_move(AcculateMotorMoveAngle() + Kp*e[1], 1);
+//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
+//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
+//		e[1] = AcculateMotorMoveAngle()-angleY[1];
 	}
+	while(1){}
+//	while(1){
+//		buff_angle += AcculateMotorMoveAngle();
+//		buff_angel_int = (int) buff_angle;
+//		buff_angle -= buff_angel_int;
+//		StepMotor_move(buff_angel_int,1);
+//	}
+		
+	
+	
+	
+	
+	
+	
+	
+	
+//	while(1){
+//		/*解算角度*/
+//		//StepMotor_move(0);
+//		if(ReceiveDataEn == 1){
+//			ReceiveDataEn = 0;
+//			MPU6050GyroRead(GyroData);
+//			MPU6050AccRead(AccData);
+//			//printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
+//			cal_GyroAngleY();
+//			cal_AccAngleY();
+//			KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleX);
+//			printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+//		}
+//		//StepMotor_move(20);
+//		//printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+
+//	}
 	return 1;
 }
 
-//		angleY = Q_ANGLE.Yaw-Angle_ZeroPoint;
-//		//printf("angleY = %f\n",angleY);
+//		angleY[1] = Q_ANGLE.Yaw-Angle_ZeroPoint;
+//		//printf("angleY[1] = %f\n",angleY[1]);
 //		StepMotor_move(AcculateMotorMoveAngle());// 转动电机 
 //		printf("Q_ANGLE.Yaw = %f\n",Q_ANGLE.Yaw);
 //		printf("DMP_DATA.dmp_gyroz = %f\n",DMP_DATA.dmp_gyroz);
+
+
+
+
+
+
+
+
+
+/*	Task 1
+	//
+	//		控制电机使平板可以随着摆杆的摆动而旋转（3~5 周），摆杆摆一个周
+	//	期，平板旋转一周（360o），偏差绝对值不大于45°。
+	//	
+	while(1){
+		static uint8_t state = 0;
+		AD_angleY[1] = voltage_to_de();
+		//printf("AD_angleY %f\n",AD_angleY[1]);
+		if(state == 0){
+			state = 1;
+			while(AD_angleY[1]>0){
+				AD_angleY[1] = voltage_to_de();
+				StepMotor_move(180, 1);
+			}
+			while(AD_angleY[1]<0){
+				AD_angleY[1] = voltage_to_de();
+				StepMotor_move(360, 1);
+			}
+		}
+		else if(state == 1){
+			state = 0;
+			while(AD_angleY[1]>0){
+				AD_angleY[1] = voltage_to_de();
+				StepMotor_move(180, 1);
+			}
+			while(AD_angleY[1]<0){
+				AD_angleY[1] = voltage_to_de();
+				StepMotor_move(0, 1);
+			}
+		}
+	}
+*/
+
+/*	Task 2
+	//		在平板上粘贴一张画有一组间距为 1cm 平行线的打印纸。用手推动摆
+	//	杆至一个角度 θ （ θ 在 30o～45o间） ，调整平板角度，在平板中心稳
+	//	定放置一枚 1 元硬币（人民币） ；启动后放开摆杆让其自由摆动。在摆
+	//	杆摆动过程中，要求控制平板状态，使硬币在 5 个摆动周期中不从平
+	//	板上滑落，并尽量少滑离平板的中心位置。
+	//
+	while(2){
+		cal_angle();
+		AcculateMotorMoveAngle();
+	}
+*/
+
 
 
 

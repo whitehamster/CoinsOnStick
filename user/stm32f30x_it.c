@@ -152,18 +152,18 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-void EXTI1_IRQHandler(void)
-{
+//void EXTI1_IRQHandler(void)
+//{
 
-	if(EXTI_GetITStatus(EXTI_Line1)==SET){
-		EXTI_ClearITPendingBit(EXTI_Line1);
-//		MPU6050GyroRead(GyroData);
-//		MPU6050AccRead(AccData);
-//		printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
-		
-		
-	}
-}
+//	if(EXTI_GetITStatus(EXTI_Line1)==SET){
+//		EXTI_ClearITPendingBit(EXTI_Line1);
+////		MPU6050GyroRead(GyroData);
+////		MPU6050AccRead(AccData);
+////		printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
+//		
+//		
+//	}
+//}
 
 /**
   * @brief  This function handles DMA1_Channel6_IRQ Handler.
@@ -201,11 +201,35 @@ void TIM3_IRQHandler(void)
 	if( TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET ) 
     {
 		TIM_ClearITPendingBit(TIM3, TIM_FLAG_Update);   //清除中断标志 
+		cal_GyroAngleY();
+		cal_AccAngleY();
+		KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleX);
 		ReceiveDataEn = 1;
 	}
 }
-
-
+/* 	微分角度得角速度之用50ms
+	占先式优先级 3
+*/
+extern uint8_t flag_50ms;
+void TIM4_IRQHandler(void)
+{
+	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)
+	{
+		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+		flag_50ms = 1;
+	}
+}
+/* 	按键中断
+	占先式优先级 0
+*/
+int start_flag = 0;
+void EXTI0_IRQHandler(void)
+{
+	if (EXTI_GetITStatus(EXTI_Line0) == SET){
+		start_flag = 1;
+		EXTI_ClearITPendingBit(EXTI_Line0);
+	}    
+}
 
 
 /**

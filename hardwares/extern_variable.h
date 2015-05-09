@@ -3,7 +3,7 @@
 
 	#include "stdint.h"
 	
-	
+	extern float AD_angleY[2];
 	
 	/* * * 传感器 * * */
 	//标志位
@@ -19,13 +19,13 @@
 		float AngleX;
 		float AngleY;
 		float AngleZ;
-		float ZeroPointX;
+		float ZeroPointX;		//零漂（加速度计结构体时单位为g;陀螺仪结构体时单位为deg/s）
 		float ZeroPointY;
 		float ZeroPointZ;
 	}S_FLOAT_Angle;
 	extern S_FLOAT_Angle S_FLOAT_AccAngle;
 	extern S_FLOAT_Angle S_FLOAT_GyroAngle;
-	extern float angleY;		//杆与竖直方向夹角(deg) 此处应命名为angleX即X轴倾斜度，因历史原因，故保留该变量名
+	extern float angleY[2];		//杆与竖直方向夹角(deg) 此处应命名为angleX即X轴倾斜度，因历史原因，故保留该变量名
 	
 	/* * * 电机 * * */
 	extern float Angle_pre; //先前角度

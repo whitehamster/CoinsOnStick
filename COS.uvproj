@@ -460,6 +460,11 @@
               <FileType>1</FileType>
               <FilePath>.\user\extern_variable.c</FilePath>
             </File>
+            <File>
+              <FileName>arm_cortexM4lf_math.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\lib\inc\arm_cortexM4lf_math.lib</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -474,6 +479,11 @@
               <FileName>mpu6050.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\hardwares\mpu6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardwares\adc.c</FilePath>
             </File>
           </Files>
         </Group>

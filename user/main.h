@@ -13,4 +13,5 @@
 	#include "exit_init.h"
 	#include "extern_variable.h"
 	#include "cal.h"
+	#include "adc.h"
 #endif
