@@ -223,7 +223,7 @@ float AcculateMotorMoveAngle(void)
 }
 
 /*
-	*功能	角度值获取(约需1.890ms)
+	*功能	角度值原始数据IIC获取(约需1.890ms)
 	*全局变量
 			GyroData[3]
 			AccData[3]

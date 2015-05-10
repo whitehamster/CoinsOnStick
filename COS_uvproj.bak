@@ -480,6 +480,11 @@
               <FileType>1</FileType>
               <FilePath>.\hardwares\mpu6050.c</FilePath>
             </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardwares\adc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

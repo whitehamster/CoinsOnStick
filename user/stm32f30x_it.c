@@ -145,25 +145,7 @@ void PendSV_Handler(void)
 /******************************************************************************/
 
 
-/**
-  * @brief  This function handles EXTI1_IRQ Handler.
-  * @note	每进次中断取一次数据
-			占先式优先级 1
-  * @param  None
-  * @retval None
-  */
-//void EXTI1_IRQHandler(void)
-//{
 
-//	if(EXTI_GetITStatus(EXTI_Line1)==SET){
-//		EXTI_ClearITPendingBit(EXTI_Line1);
-////		MPU6050GyroRead(GyroData);
-////		MPU6050AccRead(AccData);
-////		printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
-//		
-//		
-//	}
-//}
 
 /**
   * @brief  This function handles DMA1_Channel6_IRQ Handler.
@@ -182,6 +164,22 @@ void DMA1_Channel6_IRQHandler(void)
     DMA_ClearITPendingBit(DMA1_IT_GL6);
   }
 }
+
+/**
+  * @brief  This function handles EXTI1_IRQ Handler.
+  * @note	每进次中断使能取数据标志位
+			占先式优先级 1
+  * @param  None
+  * @retval None
+  */
+void EXTI1_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line1)==SET){
+		EXTI_ClearITPendingBit(EXTI_Line1);
+		ReceiveDataEn = 1;
+	}
+}
+
 /* 	作为延时函数1us
 	占先式优先级 0
 */
@@ -193,6 +191,7 @@ void TIM2_IRQHandler(void)
 		TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);   //清除中断标志  
 	}
 }
+
 /* 	运算之用10ms
 	占先式优先级 2
 */
@@ -204,9 +203,9 @@ void TIM3_IRQHandler(void)
 		cal_GyroAngleY();
 		cal_AccAngleY();
 		KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleX);
-		ReceiveDataEn = 1;
 	}
 }
+
 /* 	微分角度得角速度之用50ms
 	占先式优先级 3
 */
@@ -219,6 +218,7 @@ void TIM4_IRQHandler(void)
 		flag_50ms = 1;
 	}
 }
+
 /* 	按键中断
 	占先式优先级 0
 */

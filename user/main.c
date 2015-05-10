@@ -1,6 +1,6 @@
 /*	
 	*管教分配:
-		PA1			TI
+		PA1			INT
 		PA.4		paulse
 		PA.5		direction
 		PB6			SCL
@@ -22,7 +22,7 @@
 	*作者:
 		海璃
 	*时间:
-		2015/5/5
+		2015/5/10
 	*进度:
 		YES: 
 		NO:	添加KalmanFilter 尚未调试（精度待确认）
@@ -30,27 +30,14 @@
 			考虑到电机的转动频率是100Hz以上，因此我采用加速度计的低通滤波(DLPF)为98Hz, 
 		可以有效滤掉电机振动带来的影响, 结合平滑滤波效果应该不错.(已加，待加电机测试)
 			
-			
 	*NONO:
 		TIM3(100ms)读取数据（使用Tim2作延时函数），结果停在delay函数中的while中
 			
 */
-
-
 #include "main.h"
 
-float buff_angle,buff_angel_int;
-
-	
-
-
-
-
 int main(){
-	int8_t Kp = 1,Ki,Kd;
-	int32_t e[2] ={0};
-	uint32_t loop_i = 0;
-	
+
 	/* 初始化 */
 	usart2_init();			//串口2初始化
 	delay_init();			//延时初始化
@@ -66,18 +53,6 @@ int main(){
 	TIM4_Init(72,50000);	//50ms定时计算摆杆角速度
 	
 	
-	
-	TIM1ch1_ITInit();		//TIM_Cmd(TIM1,ENABLE);
-							//loop_i = TIM_GetCounter(TIM1);
-							//*******   需测运行时间的函数体
-							//loop_i = TIM_GetCounter(TIM1) - loop_i;
-							//printf("\n %dus\n",loop_i);
-//	/*task 2*/
-//	Task2_Exti_Config();
-	
-
-
-	
 	//		用手推动摆杆至一个角度 θ （ θ 在 45o～60o间） ，调整平板角度，在
 	//	平板中心稳定叠放 8 枚 1 元硬币，见图 2；启动后放开摆杆让其自由
 	//	摆动。在摆杆摆动过程中，要求控制平板状态使硬币在摆杆的 5 个摆
@@ -85,69 +60,11 @@ int main(){
 	//	状态及滑落的硬币数计算成绩。
 	//
 	while(3){
-//		cal_angle();
-//		printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
-//		StepMotor_move(20, 1);
-//		
-//		printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
-//		
-		
 		cal_angle();
-		
-		
-		
-		
-//		StepMotor_move(AcculateMotorMoveAngle() + Kp*e[1], 1);
-//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
-//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
-//		e[1] = AcculateMotorMoveAngle()-angleY[1];
-//		e[0] = e[1];
-//		StepMotor_move(AcculateMotorMoveAngle() + Kp*e[1], 1);
-//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
-//		cal_angle();cal_angle();cal_angle();cal_angle();cal_angle();
-//		e[1] = AcculateMotorMoveAngle()-angleY[1];
 	}
-	while(1){}
-//	while(1){
-//		buff_angle += AcculateMotorMoveAngle();
-//		buff_angel_int = (int) buff_angle;
-//		buff_angle -= buff_angel_int;
-//		StepMotor_move(buff_angel_int,1);
-//	}
-		
-	
-	
-	
-	
-	
-	
-	
-	
-//	while(1){
-//		/*解算角度*/
-//		//StepMotor_move(0);
-//		if(ReceiveDataEn == 1){
-//			ReceiveDataEn = 0;
-//			MPU6050GyroRead(GyroData);
-//			MPU6050AccRead(AccData);
-//			//printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
-//			cal_GyroAngleY();
-//			cal_AccAngleY();
-//			KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleX);
-//			printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
-//		}
-//		//StepMotor_move(20);
-//		//printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
-
-//	}
 	return 1;
 }
 
-//		angleY[1] = Q_ANGLE.Yaw-Angle_ZeroPoint;
-//		//printf("angleY[1] = %f\n",angleY[1]);
-//		StepMotor_move(AcculateMotorMoveAngle());// 转动电机 
-//		printf("Q_ANGLE.Yaw = %f\n",Q_ANGLE.Yaw);
-//		printf("DMP_DATA.dmp_gyroz = %f\n",DMP_DATA.dmp_gyroz);
 
 
 
@@ -158,7 +75,6 @@ int main(){
 
 
 /*	Task 1
-	//
 	//		控制电机使平板可以随着摆杆的摆动而旋转（3~5 周），摆杆摆一个周
 	//	期，平板旋转一周（360o），偏差绝对值不大于45°。
 	//	
@@ -198,6 +114,7 @@ int main(){
 	//	杆摆动过程中，要求控制平板状态，使硬币在 5 个摆动周期中不从平
 	//	板上滑落，并尽量少滑离平板的中心位置。
 	//
+	Task2_Exti_Config();
 	while(2){
 		cal_angle();
 		AcculateMotorMoveAngle();
@@ -210,22 +127,48 @@ int main(){
 
 
 
-
-
-
-
-
-
-
-
+/*	以防丢步的电机驱动方法
+	while(1){
+		float buff_angle,buff_angel_int;
+		buff_angle += AcculateMotorMoveAngle();
+		buff_angel_int = (int) buff_angle;
+		buff_angle -= buff_angel_int;
+		StepMotor_move(buff_angel_int,1);
+	}	
+*/
 	
-/*
-	//检测是否成功握手
-	while(!MPU6050_testConnection()){
-		printf("NO DEVINCE!");
-		delay_ms(2000);
+/*	检测某一段程序在片上的实际运行时间
+	TIM1ch1_ITInit();
+	while(1){
+		TIM_Cmd(TIM1,ENABLE);
+		loop_i = TIM_GetCounter(TIM1);
+		
+		***   需测运行时间的函数体   ****
+		
+		loop_i = TIM_GetCounter(TIM1) - loop_i;
+		printf("\n %dus\n",loop_i);
 	}
 */
+	
+/*	解算角度
+	while(1){
+		//StepMotor_move(0);
+		if(ReceiveDataEn == 1){
+			ReceiveDataEn = 0;
+			MPU6050GyroRead(GyroData);
+			MPU6050AccRead(AccData);
+			//printf("GyroData X=%d,Y=%d,Z=%d\n",GyroData[0],GyroData[1],GyroData[2]);
+			cal_GyroAngleY();
+			cal_AccAngleY();
+			KalmanFilter_Y(S_FLOAT_AccAngle.AngleY, S_FLOAT_GyroAngle.AngleX);
+			printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+		}
+		//StepMotor_move(20);
+		//printf("angleY[1] = %f\t AccAngle = %f\t GyroAngle = %f\n",angleY[1],S_FLOAT_AccAngle.AngleY,S_FLOAT_GyroAngle.AngleX);
+	}
+*/
+
+
 	
 /*	测Z轴角速度零漂
 	while(1){

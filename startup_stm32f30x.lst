@@ -784,9 +784,8 @@ put\startup_stm32f30x.d -o.\output\startup_stm32f30x.o -IE:\keil4\ARM\RV31\INC
 ARM Macro Assembler    Page 13 
 
 
--IE:\keil4\ARM\CMSIS\Include -IE:\keil4\ARM\Inc\ST\STM32F30x --predefine="__EVA
-L SETA 1" --predefine="__MICROLIB SETA 1" --list=.\startup_stm32f30x.lst user\s
-tartup_stm32f30x.s
+-IE:\keil4\ARM\CMSIS\Include -IE:\keil4\ARM\Inc\ST\STM32F30x --predefine="__MIC
+ROLIB SETA 1" --list=.\startup_stm32f30x.lst user\startup_stm32f30x.s
 
 
 
@@ -1718,4 +1717,4 @@ Symbol: __main
       At line 181 in file user\startup_stm32f30x.s
 Comment: __main used once
 2 symbols
-428 symbols in table
+427 symbols in table
